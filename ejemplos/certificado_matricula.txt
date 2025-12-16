@@ -1,0 +1,9 @@
+✅ Certificado de matrícula
+🆔 Código: SOL-12345
+📅 Fecha: 16/12/2025
+
+Estudiante: Juan Pérez
+Estado académico: Matriculado
+Carrera: Ingeniería
+
+El certificado también será enviado a su correo institucional.

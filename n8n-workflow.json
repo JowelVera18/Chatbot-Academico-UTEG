@@ -1,0 +1,387 @@
+{
+  "name": "Asistente Academico UTEG FINAL",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "1d76fae0-b766-4e7c-9d12-62e28701c20f",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1,
+      "position": [
+        4624,
+        400
+      ],
+      "id": "db0d83cf-728d-4936-8ee5-0c2d5c3f96c3",
+      "name": "Telegram Trigger",
+      "webhookId": "56dd031c-a790-4694-96a0-aea374dc2f7a",
+      "credentials": {
+        "telegramApi": {
+          "id": "ordfANd90tsvCK7t",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  user_message: $json.message.text,\n  chat_id: $json.message.chat.id\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4832,
+        400
+      ],
+      "id": "6789c995-8e27-46b7-89d7-61fec5913c5c",
+      "name": "Extraer Mensaje"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$json.user_message}}",
+        "options": {
+          "systemMessage": "Eres un chatbot académico universitario.\n\nDevuelve SIEMPRE un JSON válido con esta estructura:\n{\n\"decision\":\"saludo|consulta|iniciar_certificado|seguimiento\",\n\"tema\":\"matricula|notas|asistencia|no_adeudar|practicas|otro\",\n\"respuesta\":\"mensaje claro para el estudiante\"\n}\n\nNo agregues texto fuera del JSON.\nMensaje del estudiante:\n{{ $json.user_message }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        5008,
+        400
+      ],
+      "id": "f8470849-251a-4477-ac01-6c19d89263f2",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "jsCode": "let raw = null;\n\n// Intentar encontrar el contenido en varias propiedades\nif ($json.output_text) raw = $json.output_text;\nelse if ($json.output && typeof $json.output.content === 'string') raw = $json.output.content;\nelse if (typeof $json.output === 'string') raw = $json.output;\nelse if (typeof $json.text === 'string') raw = $json.text;\nelse raw = JSON.stringify($json);\n\n// Intentar extraer JSON aunque esté dentro de texto\nlet parsed = null;\ntry {\n  // Buscar primer bloque JSON en el texto\n  const match = raw.match(/\\{[\\s\\S]*\\}/);\n  if (match) {\n    parsed = JSON.parse(match[0]);\n  }\n} catch (e) {\n  parsed = null;\n}\n\n// Devolver valores seguros\nreturn [{\n  decision: parsed?.decision || \"otro\",\n  tema: parsed?.tema || \"otro\",\n  respuesta: parsed?.respuesta || \"👋 Hola, soy el asistente académico virtual. ¿En qué puedo ayudarte hoy?\"\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5296,
+        400
+      ],
+      "id": "d351573d-931c-46b0-82c4-40b4db3e9350",
+      "name": "Parse AI Response"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Datos del estudiante\nconst estudiante = {\n  nombre: 'Juan Pérez',\n  cedula: '1234567890',\n  activo: true,\n  deuda: false\n};\n\n// Generamos ID y fecha\nconst solicitudId = 'SOL-' + Math.floor(Math.random() * 100000);\nconst fecha = new Date().toLocaleDateString();\n\nlet respuesta = \"\";\n\n// Revisamos tipo de solicitud\nif ($json.decision === 'iniciar_certificado') {\n  switch ($json.tema) {\n    case 'matricula':\n      respuesta = `✅ Certificado de matrícula\n🆔 Código: ${solicitudId}\n📅 Fecha: ${fecha}\n\nEstudiante: ${estudiante.nombre}\nEstado académico: Matriculado\nCarrera: Ingeniería\n\nEl certificado también será enviado a su correo institucional.`;\n      break;\n\n    case 'notas':\n      respuesta = `✅ Certificado de notas\n🆔 Código: ${solicitudId}\n📅 Fecha: ${fecha}\n\nEstudiante: ${estudiante.nombre}\nCalificaciones:\n- Matemáticas: 9.5\n- Física: 8.7\n- Historia: 10.0\n- Lengua: 9.0\n\nEl certificado también será enviado a su correo institucional.`;\n      break;\n\n    case 'no_adeudar':\n      respuesta = `✅ Certificado de no adeudar\n🆔 Código: ${solicitudId}\n📅 Fecha: ${fecha}\n\nEstudiante: ${estudiante.nombre}\nEstado financiero: Sin obligaciones pendientes\n\nEl certificado también será enviado a su correo institucional.`;\n      break;\n\n    case 'practicas':\n      respuesta = `✅ Certificado de prácticas preprofesionales\n🆔 Código: ${solicitudId}\n📅 Fecha: ${fecha}\n\nEstudiante: ${estudiante.nombre}\nPrácticas realizadas:\n- Laboratorio de Física\n- Taller de Programación\n\nEl certificado también será enviado a su correo institucional.`;\n      break;\n\n    default:\n      respuesta = `✅ Certificado académico\n🆔 Código: ${solicitudId}\n📅 Fecha: ${fecha}\n\nEstudiante: ${estudiante.nombre}\n\nEl certificado también será enviado a su correo institucional.`;\n  }\n\n  // Retornamos la solicitud simulada\n  return [{\n    ...$json,\n    estudiante,\n    respuesta,\n    solicitud: {\n      id: solicitudId,\n      fecha,\n      tipo: $json.tema\n    }\n  }];\n}\n\n// Si no es iniciar certificado\nreturn [$json];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5504,
+        400
+      ],
+      "id": "cae3733f-8b7e-4abf-a185-c5549424d587",
+      "name": "Generar Solicitud"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        5008,
+        560
+      ],
+      "id": "95516b8b-a93d-4d05-8e40-a67c5370c24b",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "scLvYBu70AJF9lb9",
+          "name": "Google Gemini(PaLM) Api account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json.decision}}",
+                    "rightValue": "saludo",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEquals"
+                    },
+                    "id": "d806d140-e654-45ee-b340-68406343be55"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "d0daabb0-bdf8-4f1b-abd5-eea92b7da914",
+                    "leftValue": "={{$json.decision}}",
+                    "rightValue": "consulta",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEquals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "d2ee5543-6c0e-4737-96ee-af0231a06621",
+                    "leftValue": "={{$json.decision}}",
+                    "rightValue": "iniciar_certificado",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEquals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "1cb05079-5296-4924-8297-999641b5352e",
+                    "leftValue": "={{$json.decision}}",
+                    "rightValue": "seguimiento",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEquals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "4b4f563e-8994-4c4b-8fa2-45e8e245d794",
+                    "leftValue": "={{$json.decision}}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEquals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        5792,
+        352
+      ],
+      "id": "6ccae89f-e138-4c3b-8608-24677c6a3f5b",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Extraer Mensaje').item.json.chat_id }}",
+        "text": "={{ $json.respuesta }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        6112,
+        416
+      ],
+      "id": "16d3d5a8-f0f3-4563-ae5d-b7d56fbdcc07",
+      "name": "Enviar Mensaje2",
+      "webhookId": "c0edafbf-0907-47c5-b737-1d9ad060170a",
+      "credentials": {
+        "telegramApi": {
+          "id": "ordfANd90tsvCK7t",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        []
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Extraer Mensaje",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer Mensaje": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Response": {
+      "main": [
+        [
+          {
+            "node": "Generar Solicitud",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generar Solicitud": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Enviar Mensaje2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar Mensaje2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar Mensaje2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar Mensaje2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar Mensaje2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "50ffedff-ca88-4d9a-a223-addb9d1dd886",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "eababe8c18d4cea20468a76fad1881c9b11f9fa895145c3951efdaaeadd07110"
+  },
+  "id": "4TVffK5kB0drpoNC",
+  "tags": []
+}

@@ -65,3 +65,10 @@ Los ejemplos de certificados generados por el sistema están en la carpeta `ejem
 ## 📅 Fecha de entrega
 16 de diciembre
 
+---
+
+## 📝 Notas finales
+
+- Asegúrate de no subir credenciales sensibles al repositorio.  
+- Los archivos de `ejemplos/` permiten entender el formato de los certificados generados.  
+- El proyecto cumple con los requisitos de entrega de la UTEG: video demo, repositorio completo y enlace al sistema en ejecución.

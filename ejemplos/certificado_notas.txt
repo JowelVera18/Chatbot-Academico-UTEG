@@ -1,0 +1,12 @@
+✅ Certificado de notas
+🆔 Código: SOL-67890
+📅 Fecha: 16/12/2025
+
+Estudiante: Juan Pérez
+Calificaciones:
+- Matemáticas: 9.5
+- Física: 8.7
+- Historia: 10.0
+- Lengua: 9.0
+
+El certificado también será enviado a su correo institucional.
