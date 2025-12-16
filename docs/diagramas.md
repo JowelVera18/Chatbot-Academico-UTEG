@@ -38,7 +38,8 @@ Este archivo explica el flujo del chatbot académico UTEG desarrollado en n8n.
 
 ## Diagrama del flujo
 
-![Flujo n8n](docs/flujo-n8n.png)
+![Flujo n8n](flujo-n8n.png)
+![alt text](image.png)
 
 > Nota: el diagrama `flujo-n8n.png` muestra visualmente cómo se conectan los nodos.
 
