@@ -32,12 +32,14 @@ https://youtube.com/@fsocietyuteg?si=UaX1ykutIleCFWn-
 ---
 
 ## 📂 Estructura del proyecto
+
 Chatbot-Academico-UTEG/
 ├─ n8n-workflow.json
 ├─ docs/
 │ ├─ flujo-n8n.png
 │ └─ diagramas.md
 └─ ejemplos/
+
 ---
 
 ## 📊 Documentación
