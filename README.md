@@ -29,9 +29,9 @@ https://youtube.com/@fsocietyuteg?si=UaX1ykutIleCFWn-
 - Google Gemini (IA)
 - GitHub
 
----
-## 📂 Estructura del proyecto
 
+## 📂 Estructura del proyecto
+```
 Chatbot-Academico-UTEG/
 ├─ n8n-workflow.json
 ├─ docs/
@@ -42,7 +42,7 @@ Chatbot-Academico-UTEG/
 ├─ certificado_notas.txt
 ├─ certificado_no_adeudar.txt
 └─ certificado_practicas.txt
----
+```
 
 ## 📊 Documentación
 La explicación del flujo y los diagramas se encuentran en la carpeta `docs`.
